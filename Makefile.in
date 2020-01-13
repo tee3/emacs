@@ -150,7 +150,8 @@ sharedstatedir=@sharedstatedir@
 # a subdirectory of this.
 libexecdir=@libexecdir@
 
-# Currently only used for the systemd service file.
+# Currently only used for the systemd service file and the launchd
+# plist file.
 libdir=@libdir@
 
 # Where to install emacs-module.h.
@@ -209,6 +210,10 @@ appdatadir=$(datarootdir)/metainfo
 # $XDG_RUNTIME_DIR/systemd/user/
 # It seems the user may end up having to make a manual link...
 systemdunitdir=$(libdir)/systemd/user
+
+# Where the etc/emacs.plist file is to be installed.
+# @todo it is not clear where this should be for non-root installs
+launchdunitdir=$(libdir)/Library/LaunchAgents
 
 # Where the etc/images/icons/hicolor directory is to be installed.
 icondir=$(datarootdir)/icons
@@ -730,6 +735,13 @@ install-etc:
 	  ${srcdir}/etc/emacs.service > $${tmp}; \
 	$(INSTALL_DATA) $${tmp} "$(DESTDIR)$(systemdunitdir)/${EMACS_NAME}.service"; \
 	rm -f $${tmp}
+	umask 022; $(MKDIR_P) "$(DESTDIR)$(launchdunitdir)"
+	tmp=etc/emacs.tmpplist; rm -f $${tmp}; \
+	client_name=`echo emacsclient | sed '$(TRANSFORM)'`${EXEEXT}; \
+	cp "${srcdir}/etc/emacs.plist" $${tmp}; \
+	if command -v plutil >/dev/null 2>/dev/null; then plutil -replace ProgramArguments.0 -string "${ns_appbindir}}/bin/Emacs" $${tmp}; fi; \
+	$(INSTALL_DATA) $${tmp} "$(DESTDIR)$(launchdunitdir)/org.gnu.Emacs.plist"; \
+	rm -f $${tmp}
 	thisdir=`/bin/pwd`; \
 	cd ${iconsrcdir} || exit 1; umask 022 ; \
 	for dir in */*/apps */*/mimetypes; do \
@@ -799,6 +811,7 @@ uninstall: uninstall-$(NTDIR) uninstall-doc
 	-rm -f "$(DESTDIR)${desktopdir}/${EMACS_NAME}.desktop"
 	-rm -f "$(DESTDIR)${appdatadir}/${EMACS_NAME}.appdata.xml"
 	-rm -f "$(DESTDIR)$(systemdunitdir)/${EMACS_NAME}.service"
+	-rm -f "$(DESTDIR)$(launchdunitdir)/org.gnu.Emacs.plist"
   ifneq (,$(use_gamedir))
 	for file in snake-scores tetris-scores; do \
 	  file="$(DESTDIR)${gamedir}/$${file}"; \

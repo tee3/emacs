@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- If your Emacs is installed in a non-standard location, you may need -->
+<!-- to copy this file to a standard directory, eg ~/Library/LaunchAgents/ . -->
+<!-- If you install this file by hand, change the "ProgramArguments" lines below -->
+<!-- to use absolute file names for the executables. -->
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>org.gnu.Emacs</string>
+	<key>ProcessType</key>
+	<string>Interactive</string>
+	<key>ProgramArguments</key>
+	<array>
+		<string>emacs</string>
+		<string>--fg-daemon</string>
+	</array>
+	<key>Sockets</key>
+	<dict>
+		<key>org.gnu.Emacs:0</key>
+		<dict>
+			<key>SockNodeName</key>
+			<string>127.0.0.1</string>
+			<key>SockType</key>
+			<string>stream</string>
+			<key>SockFamily</key>
+			<string>IPv4</string>
+			<key>SockProtocol</key>
+			<string>TCP</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

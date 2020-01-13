@@ -24,6 +24,7 @@ along with GNU Emacs.  If not, see <https://www.gnu.org/licenses/>.  */
 #include <errno.h>
 #include <fcntl.h>
 #include <stdlib.h>
+#include <stddef.h>
 
 #include <sys/file.h>
 #include <sys/stat.h>
@@ -59,6 +60,10 @@ along with GNU Emacs.  If not, see <https://www.gnu.org/licenses/>.  */
 #ifdef HAVE_LIBSYSTEMD
 # include <systemd/sd-daemon.h>
 # include <sys/socket.h>
+#endif
+
+#ifdef DARWIN_OS
+# include <launch.h>
 #endif
 
 #ifdef HAVE_WINDOW_SYSTEM
@@ -1392,6 +1397,26 @@ main (int argc, char **argv)
 	sockfd = SD_LISTEN_FDS_START;
 #endif /* HAVE_LIBSYSTEMD */
 
+#ifdef DARWIN_OS
+      /* Read the number of sockets passed through by launchd.  */
+      size_t launchd_socket = 0;
+      int * launchd_sockets = NULL;
+      const int status =
+        launch_activate_socket("org.gnu.Emacs:0", &launchd_sockets, &launchd_socket);
+      if (status != 0)
+        {
+          fprintf (stderr,"\nWarning: %s\n", strerror (status));
+        }
+      else if (launchd_socket > 1)
+        fprintf (stderr,
+                 ("\n"
+                  "Warning: launchd passed more than one socket to Emacs.\n"));
+      else if (launchd_socket == 1)
+        sockfd = launchd_sockets [0];
+      if (launchd_sockets)
+        free (launchd_sockets);
+#endif /* DARWIN_OS */
+
 #ifdef USE_GTK
       fputs ("\nWarning: due to a long standing Gtk+ bug\nhttps://gitlab.gnome.org/GNOME/gtk/issues/221\n\
 Emacs might crash when run in daemon mode and the X11 connection is unexpectedly lost.\n\
@@ -2341,6 +2366,10 @@ all of which are called before Emacs is actually killed.  */
   sd_notify(0, "STOPPING=1");
 #endif /* HAVE_LIBSYSTEMD */
 
+#ifdef DARWIN_OS
+  /* @todo is there anything to do here? */
+#endif
+
   /* Fsignal calls emacs_abort () if it sees that waiting_for_input is
      set.  */
   waiting_for_input = 0;
@@ -2821,6 +2850,10 @@ from the parent process and its tty file descriptors.  */)
 #ifdef HAVE_LIBSYSTEMD
       sd_notify(0, "READY=1");
 #endif /* HAVE_LIBSYSTEMD */
+
+#ifdef DARWIN_OS
+      /* @todo is there anything to do here? */
+#endif
     }
 
   if (daemon_type == 2)
