@@ -739,7 +739,7 @@ install-etc:
 	tmp=etc/emacs.tmpplist; rm -f $${tmp}; \
 	client_name=`echo emacsclient | sed '$(TRANSFORM)'`${EXEEXT}; \
 	cp "${srcdir}/etc/emacs.plist" $${tmp}; \
-	if command -v plutil >/dev/null 2>/dev/null; then plutil -replace ProgramArguments.0 -string "${ns_appbindir}}/bin/Emacs" $${tmp}; fi; \
+        if command -v plutil >/dev/null 2>/dev/null; then plutil -replace ProgramArguments.0 -string "${ns_appbindir}/bin/Emacs" $${tmp}; fi; \
 	$(INSTALL_DATA) $${tmp} "$(DESTDIR)$(launchdunitdir)/org.gnu.Emacs.plist"; \
 	rm -f $${tmp}
 	thisdir=`/bin/pwd`; \

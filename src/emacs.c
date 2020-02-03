@@ -1402,10 +1402,11 @@ main (int argc, char **argv)
       size_t launchd_socket = 0;
       int * launchd_sockets = NULL;
       const int status =
-        launch_activate_socket("org.gnu.Emacs:0", &launchd_sockets, &launchd_socket);
+        launch_activate_socket ("org.gnu.Emacs:0", &launchd_sockets, &launchd_socket);
+      fprintf (stderr,"launchd: %d %zu %p\n", status, launchd_socket, launchd_sockets);
       if (status != 0)
         {
-          fprintf (stderr,"\nWarning: %s\n", strerror (status));
+          fprintf (stderr,"\nWarning: (launchd) %s\n", strerror (status));
         }
       else if (launchd_socket > 1)
         fprintf (stderr,
@@ -1413,6 +1414,7 @@ main (int argc, char **argv)
                   "Warning: launchd passed more than one socket to Emacs.\n"));
       else if (launchd_socket == 1)
         sockfd = launchd_sockets [0];
+      fprintf (stderr,"launchd: %d\n", sockfd);
       if (launchd_sockets)
         free (launchd_sockets);
 #endif /* DARWIN_OS */
